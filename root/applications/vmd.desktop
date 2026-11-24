@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VMD (Visual Molecular Dynamics)
+Comment=Visual Molecular Dynamics 3D Viewer & Simulation Analysis
+Exec=xfce4-terminal --title="VMD Console" -e "bash -c 'cd /workspace && VMDSIMPLEGRAPHICS=1 /usr/local/bin/vmd'"
+Icon=/usr/share/pixmaps/vmd.png
+Path=/workspace
+Terminal=false
+Categories=Science;Education;
+StartupNotify=true

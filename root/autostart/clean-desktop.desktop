@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Clean Desktop
+Exec=/usr/local/bin/clean-desktop.sh
+OnlyShowIn=XFCE;
+Terminal=false

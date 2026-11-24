@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AutoDockTools (ADT)
+Comment=AutoDock Graphical Interface
+Exec=bash -c "cd /workspace && /opt/mgltools/bin/adt"
+Icon=/opt/mgltools/MGLToolsPckgs/Pmv/Icons/128x128/adt.png
+Path=/workspace
+Terminal=false
+Categories=Science;Education;
+StartupNotify=true

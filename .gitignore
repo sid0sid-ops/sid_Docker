@@ -1,0 +1,11 @@
+# Tarball archives (too large for GitHub / proprietary)
+*.tar.gz
+*.tgz
+*.zip
+
+# Container persistent runtime config (contains user session data, keys, cache)
+config/
+
+# OS specific files
+.DS_Store
+Thumbs.db

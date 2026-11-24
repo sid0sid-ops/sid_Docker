@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PMV (Molecular Viewer)
+Comment=Python Molecular Viewer
+Exec=bash -c "cd /workspace && /opt/mgltools/bin/pmv"
+Icon=/opt/mgltools/MGLToolsPckgs/Pmv/Icons/128x128/cpk128.png
+Path=/workspace
+Terminal=false
+Categories=Science;Education;
+StartupNotify=true
