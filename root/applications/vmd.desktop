@@ -8,4 +8,4 @@ Icon=/usr/share/pixmaps/vmd.png
 Path=/workspace
 Terminal=false
 Categories=Science;Education;
-StartupNotify=true
+StartupNotify=false

@@ -6,8 +6,7 @@ services:
     platform: linux/amd64
     shm_size: "1gb"
     ports:
-      - "127.0.0.1:3000:3000"   # Linux Desktop (KasmVNC)
-      - "127.0.0.1:3001:3001"   # Browser File Upload/Download Channel
+      - "127.0.0.1:3000:3000"   # Bio-Linux Desktop (/) & File Upload Channel (/files/)
     environment:
       - TZ=Asia/Kolkata
       - LIBGL_ALWAYS_SOFTWARE=1

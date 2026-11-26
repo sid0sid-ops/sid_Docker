@@ -84,7 +84,13 @@ RUN groupadd -g 1000 sid \
     && mkdir -p /workspace/files /workspace/projects /workspace/scratch \
     && chown -R sid:sid /config /opt/mamba
 
-# 7. Desktop menu launchers, clean XFCE defaults, KasmVNC config, and entrypoint
+# 7. Single-port nginx proxy, customized KasmVNC UI, desktop launchers, and entrypoint
+RUN apt-get -o Acquire::http::Timeout=15 -o Acquire::Retries=3 update \
+    && apt-get -o Acquire::http::Timeout=15 -o Acquire::Retries=3 install -y --no-install-recommends nginx-light \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN --mount=type=bind,source=root/scripts/patch_www.py,target=/mnt/patch_www.py \
+    python3 /mnt/patch_www.py
+COPY root/nginx.conf /etc/nginx/bio-linux.conf
 COPY root/kasmvnc.yaml /etc/kasmvnc/kasmvnc.yaml
 COPY root/xfce/xfce4-panel.xml /etc/xdg/xfce4/panel/default.xml
 COPY root/xfce/xfwm4.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml
@@ -95,7 +101,7 @@ COPY root/scripts/file_portal.py /usr/local/bin/file_portal.py
 COPY root/scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/clean-desktop.sh /usr/local/bin/file_portal.py /usr/local/bin/entrypoint.sh
 
-EXPOSE 3000 3001
+EXPOSE 3000
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

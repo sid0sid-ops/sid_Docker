@@ -10,11 +10,11 @@ Designed specifically as a lightweight Linux environment (`~1.59 GB` on disk / `
 
 * **Ultra-Slim Image (`~1.59 GB` vs `4.81 GB`)**: Built directly from `ubuntu:22.04` + standalone **KasmVNC 1.5.2** + minimal XFCE (no Docker-in-Docker, no Node.js, no extra CLI bloat). Bind-mounted installers and MGLTools `-d` installs keep wasted layers out of the final image.
 * **MacBook Air Fanless & Manual Control (`restart: "no"`)**: Zero auto-start on boot, zero background auto-updates. Pure black XFCE backdrop (`#000000`) and disabled compositing keep VNC CPU usage minimal.
-* **Built-in Browser File Upload/Download Channel (`:3001`)**: Drag-and-drop `.pdb`, `.pdbqt`, `.gro`, `.trr`, `.sdf` files from your browser straight into `/workspace/files` (or use the zero-copy host `./files` folder).
+* **Single-Port Built-in File Upload/Download Channel (`/files/`)**: Drag-and-drop `.pdb`, `.pdbqt`, `.gro`, `.trr`, `.sdf` files from `http://127.0.0.1:3000/files/` (or via the **Upload / Files** button in the sidebar) straight into `/workspace/files`, or use the zero-copy host `./files` folder.
 * **Install, Test & Delete Any Linux Tool Cleanly**:
   * Use **`micromamba`** (pre-installed, persistent under `./envs/`) for 1-command isolated installs and zero-trace deletions.
   * Or use passwordless **`sudo apt`** / manual installs inside the container, and reset the OS cleanly back to **Ubuntu + VMD + ADT** anytime via `docker compose down && docker compose up -d`.
-* **Localhost-Only Security**: Both ports (`3000` Desktop and `3001` File Channel) bind strictly to `127.0.0.1`.
+* **Localhost-Only Security**: Single port `3000` binds strictly to `127.0.0.1`.
 
 ---
 
@@ -25,8 +25,8 @@ Designed specifically as a lightweight Linux environment (`~1.59 GB` on disk / `
 | **AutoDockTools (ADT)** | `1.5.7` (MGLTools) | Docking preparation & analysis GUI | Applications Menu → `AutoDockTools (ADT)` or `adt` |
 | **VMD** | `2.0.0` (LINUXAMD64) | Molecular visualization & trajectory analysis | Applications Menu → `VMD` or `vmd` |
 | **micromamba** | `2.10.0` | Isolated Conda/Bioconda env manager | Terminal → `micromamba` |
-| **Linux Desktop (KasmVNC)** | `http://127.0.0.1:3000` | Lightweight XFCE desktop in browser | Open in browser (no login required) |
-| **File Upload/Download Channel** | `http://127.0.0.1:3001` | Upload `.pdb`/data files or download results | Open in browser |
+| **Linux Desktop** | `http://127.0.0.1:3000` | Lightweight XFCE desktop in browser | Open in browser (no login required) |
+| **File Upload/Download Channel** | `http://127.0.0.1:3000/files/` | Upload `.pdb`/data files or download results | Sidebar **Upload / Files** button or URL |
 
 > **Why `platform: linux/amd64` + `ubuntu:22.04`?**
 > Legacy prebuilt Linux bioinformatics binaries (MGLTools 1.5.7 and VMD 2.0.0) target `x86_64` `glibc`. Ubuntu 22.04 (`~32 MB` compressed) is smaller than Arch Linux (`~400+ MB`), provides standard `glibc` compatibility (unlike Alpine `musl`), and runs fast under Rosetta on Apple Silicon.
@@ -72,7 +72,7 @@ docker compose up -d --build
 
 Open:
 * **Linux Desktop**: `http://127.0.0.1:3000`
-* **File Upload/Download Portal**: `http://127.0.0.1:3001`
+* **File Upload/Download Portal**: `http://127.0.0.1:3000/files/` (or click **Upload / Files** in the desktop sidebar)
 
 ---
 

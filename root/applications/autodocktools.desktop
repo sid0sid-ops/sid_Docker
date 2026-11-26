@@ -8,4 +8,4 @@ Icon=/opt/mgltools/MGLToolsPckgs/Pmv/Icons/128x128/adt.png
 Path=/workspace
 Terminal=false
 Categories=Science;Education;
-StartupNotify=true
+StartupNotify=false

@@ -7,10 +7,10 @@ export DISPLAY=:1
 export XDG_RUNTIME_DIR=/config/.XDG
 export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:-/opt/mamba}"
 
-mkdir -p /config/.XDG /config/.config/gtk-3.0 /workspace/files /workspace/scratch /opt/mamba/envs
+mkdir -p /config/.XDG /config/.config/gtk-3.0 /workspace/files /workspace/scratch /opt/mamba/envs /tmp/nginx_body /tmp/nginx_proxy /tmp/nginx_fastcgi /tmp/nginx_uwsgi /tmp/nginx_scgi
 chmod 700 /config/.XDG
 
-# Seed Thunar sidebar bookmarks on first run for quick access to Mac shared folders
+# Seed Thunar sidebar bookmarks on first run for quick access to shared folders
 if [ ! -f /config/.config/gtk-3.0/bookmarks ]; then
   cat <<'EOF' > /config/.config/gtk-3.0/bookmarks
 file:///workspace/files Files (Upload / Dropzone)
@@ -37,7 +37,7 @@ fi
 chown -R sid:sid /config /opt/mamba/envs /workspace/files /workspace/scratch 2>/dev/null || true
 
 # Clean stale X locks and prepare X11/ICE socket directories
-rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 /tmp/nginx.pid
 mkdir -p /tmp/.X11-unix /tmp/.ICE-unix
 chmod 1777 /tmp/.X11-unix /tmp/.ICE-unix
 
@@ -51,12 +51,13 @@ cleanup() {
 }
 trap cleanup TERM INT
 
-# 1. Start local browser file upload/download portal (http://127.0.0.1:3001)
+# 1. Start internal file upload/download portal (proxied at /files/ on port 3000)
 sudo -E -H -u sid python3 /usr/local/bin/file_portal.py &
 PIDS+=($!)
 
-# 2. Start KasmVNC server directly on port 3000 (no auth, HTTP localhost only)
+# 2. Start KasmVNC server internally on localhost:6901 (proxied at / on port 3000)
 sudo -E -H -u sid /usr/bin/Xkasmvnc :1 \
+  -desktop "sid-bio-linux" \
   -PublicIP 127.0.0.1 \
   -disableBasicAuth \
   -SecurityTypes None \
@@ -68,8 +69,8 @@ sudo -E -H -u sid /usr/bin/Xkasmvnc :1 \
   -depth 24 \
   -sslOnly 0 \
   -RectThreads 0 \
-  -websocketPort 3000 \
-  -interface 0.0.0.0 \
+  -websocketPort 6901 \
+  -interface 127.0.0.1 \
   -Log *:stdout:10 &
 PIDS+=($!)
 
@@ -83,6 +84,10 @@ done
 
 # 3. Start lightweight XFCE desktop session
 sudo -E -H -u sid env DISPLAY=:1 PATH="/opt/mgltools/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" dbus-launch --exit-with-session startxfce4 &
+PIDS+=($!)
+
+# 4. Single-port reverse proxy (port 3000 -> / Desktop + /files/ Upload Portal)
+nginx -c /etc/nginx/bio-linux.conf -g 'daemon off;' &
 PIDS+=($!)
 
 wait -n "${PIDS[@]}"
