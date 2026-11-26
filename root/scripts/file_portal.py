@@ -17,6 +17,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <title>sid-bio-linux File Channel</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
   <style>
     body {{ font-family: system-ui, -apple-system, sans-serif; background: #111; color: #eee; max-width: 780px; margin: 2rem auto; padding: 0 1rem; }}
     .top {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }}

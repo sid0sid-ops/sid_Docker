@@ -1,11 +1,24 @@
 #!/usr/bin/env python3
-"""Customize KasmVNC web UI for sid-bio-linux: single display, clean sidebar, no mode toasts."""
+"""Customize KasmVNC web UI for sid-bio-linux: single display, clean sidebar, DNA favicon, no mode toasts."""
 
 import glob
 import re
+import shutil
 from pathlib import Path
 
 WWW = Path("/usr/share/kasmvnc/www")
+DNA_ICON = Path("/usr/share/pixmaps/vmd.png")
+
+if DNA_ICON.exists():
+    shutil.copy2(DNA_ICON, WWW / "favicon.png")
+for old_icon in glob.glob(str(WWW / "assets" / "368_kasm_logo_only_*.png")):
+    Path(old_icon).unlink(missing_ok=True)
+
+FAVICON_TAGS = (
+    '<meta charset="utf-8">'
+    '<link rel="icon" type="image/png" href="./favicon.png">'
+    '<link rel="apple-touch-icon" href="./favicon.png">'
+)
 
 HIDE_STYLE = (
     "<style>#noVNC_notification_overlay,#noVNC_displays_button{display:none!important;}</style></head>"
@@ -26,6 +39,8 @@ for name in ("index.html", "vnc.html"):
         continue
     text = path.read_text(encoding="utf-8")
     text = text.replace("<title>KasmVNC</title>", "<title>sid-bio-linux</title>")
+    text = re.sub(r'<link rel="(?:apple-touch-)?icon"[^>]*368_kasm_logo_only_[^>]*>', "", text)
+    text = text.replace('<meta charset="utf-8">', FAVICON_TAGS, 1)
     text = text.replace("</head>", HIDE_STYLE, 1)
     text = text.replace("KasmVNC encountered an error:", "Desktop encountered an error:")
     text = text.replace("Enable KasmVNC Keyboard Shortcuts", "Enable Keyboard Shortcuts")
