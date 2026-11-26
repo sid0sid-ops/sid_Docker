@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.DS_Store
+config/
+workspace/
+files/
+envs/
+projects/
+README.md
+get-deps.sh

@@ -1,10 +1,16 @@
-# Tarball archives (too large for GitHub / proprietary)
-*.tar.gz
-*.tgz
-*.zip
+# Installers & large binaries (placed locally in installers/)
+installers/*
+!installers/.gitkeep
 
-# Container persistent runtime config (contains user session data, keys, cache)
+# Local environment overrides (e.g., personal PROJECTS_DIR path)
+.env
+
+# Persistent runtime config, user files, scratch data, and conda envs
 config/
+workspace/
+files/
+envs/
+projects/
 
 # OS specific files
 .DS_Store

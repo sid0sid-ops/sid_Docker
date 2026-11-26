@@ -1,20 +1,22 @@
 services:
-  adt:
+  bio-linux:
     build: .
-    container_name: adt-kasm-mac
+    image: sid-bio-linux:latest
+    container_name: bio-linux
     platform: linux/amd64
     shm_size: "1gb"
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3000:3000"   # Linux Desktop (KasmVNC)
+      - "127.0.0.1:3001:3001"   # Browser File Upload/Download Channel
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Asia/Kolkata
-      - TITLE=Bioinformatics Desktop
       - LIBGL_ALWAYS_SOFTWARE=1
       - VMDSIMPLEGRAPHICS=1
-      - START_DOCKER=false
+      - MAMBA_ROOT_PREFIX=/opt/mamba
     volumes:
-      - ..:/workspace
-      - ./config:/config
+      - ./files:/workspace/files                         # Upload / Dropzone folder (Host <-> Linux)
+      - ${PROJECTS_DIR:-./projects}:/workspace/projects  # Optional extra host folder (set PROJECTS_DIR in .env)
+      - ./workspace:/workspace/scratch                   # Scratch testing directory
+      - ./config:/config                                 # Persistent user home & XFCE preferences
+      - ./envs:/opt/mamba/envs                           # Persistent isolated micromamba tool environments
     restart: "no"

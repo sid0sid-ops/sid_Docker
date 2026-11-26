@@ -1,118 +1,139 @@
-# sid_Docker 🧬
+# sid_Docker (Bio-Linux Workstation) 🧬
 
-A lightweight, battery-optimized, containerized Linux GUI workstation tailored for **MacBook Air/Pro (Apple Silicon M-Series)** and Linux/Windows systems. Pre-configured with **AutoDockTools 1.5.7 (ADT)**, **VMD 2.0.0 (Visual Molecular Dynamics)**, **PMV**, **AutoDock 4**, **AutoDock Vina**, and **OpenBabel 3.1.1** accessible directly through your web browser via **KasmVNC**.
+A slim, modular, manual-start (`restart: "no"`) **Ubuntu 22.04 (`linux/amd64`) Linux GUI workstation** built for **Apple Silicon Macs (M1/M2/M3/M4 via Rosetta)** and x86_64 Linux/Windows hosts.
 
----
-
-## ⚡ Key Highlights & Optimizations
-
-* **MacBook Air Fanless Optimization**: Idle container load is **~0.3% CPU** and **~650 MB RAM**. The Mac chassis stays completely cool.
-* **Solid Black Backdrop**: Background wallpaper is configured to pure black (`#000000`), reducing remote desktop tile-encoding CPU overhead by over 90% and making window dragging buttery smooth over VNC/WebRTC.
-* **Window Decoration Fixes**: Titlebars, close `[X]`, and maximize `[□]` buttons remain fully functional without losing borders when maximized (`borderless_maximize = false`).
-* **Clean Single Bottom Panel**: Clean XFCE interface with Applications Menu, taskbar, expanding separator, and system tray. Zero desktop icon clutter.
-* **Network Security**: Port 3000 is bound strictly to `127.0.0.1` (localhost only), preventing exposure to public or campus Wi-Fi networks.
-* **Pre-configured Terminal**: Shell prompt set to `sid_Docker` across interactive and login sessions.
+Designed specifically as a lightweight Linux environment (`~1.59 GB` on disk / `371 MB` compressed content) for GUI and x86_64-only bioinformatics applications (**VMD 2.0.0** and **AutoDockTools 1.5.7**), plus clean isolated testing and removal of any other Linux bioinformatics tools—while fast native CLI tools like **AutoDock Vina** can continue running directly on your Mac.
 
 ---
 
-## 📦 Installed Tools & Software
+## ⚡ Key Highlights
 
-| Tool | Version | Description | Launch Command / Menu |
+* **Ultra-Slim Image (`~1.59 GB` vs `4.81 GB`)**: Built directly from `ubuntu:22.04` + standalone **KasmVNC 1.5.2** + minimal XFCE (no Docker-in-Docker, no Node.js, no extra CLI bloat). Bind-mounted installers and MGLTools `-d` installs keep wasted layers out of the final image.
+* **MacBook Air Fanless & Manual Control (`restart: "no"`)**: Zero auto-start on boot, zero background auto-updates. Pure black XFCE backdrop (`#000000`) and disabled compositing keep VNC CPU usage minimal.
+* **Built-in Browser File Upload/Download Channel (`:3001`)**: Drag-and-drop `.pdb`, `.pdbqt`, `.gro`, `.trr`, `.sdf` files from your browser straight into `/workspace/files` (or use the zero-copy host `./files` folder).
+* **Install, Test & Delete Any Linux Tool Cleanly**:
+  * Use **`micromamba`** (pre-installed, persistent under `./envs/`) for 1-command isolated installs and zero-trace deletions.
+  * Or use passwordless **`sudo apt`** / manual installs inside the container, and reset the OS cleanly back to **Ubuntu + VMD + ADT** anytime via `docker compose down && docker compose up -d`.
+* **Localhost-Only Security**: Both ports (`3000` Desktop and `3001` File Channel) bind strictly to `127.0.0.1`.
+
+---
+
+## 📦 Installed Tools & Ports
+
+| Component / Port | Version / URL | Purpose | Launch |
 | :--- | :--- | :--- | :--- |
-| **AutoDockTools (ADT)** | 1.5.7 | Molecular docking setup and analysis | Applications Menu → `AutoDockTools` or `adt` |
-| **Python Molecular Viewer (PMV)**| 1.5.7 | Scripps molecular visualization | Applications Menu → `PMV` or `pmv` |
-| **VMD** | 2.0.0 | Visual Molecular Dynamics (OpenGL) | Applications Menu → `VMD` or `vmd` |
-| **AutoDock Vina** | 1.2.x | High-performance docking engine | Terminal → `vina` |
-| **AutoDock 4** | 4.2.6 | Lamarckian genetic docking engine | Terminal → `autodock` |
-| **OpenBabel** | 3.1.1 | Chemical format converter & 3D builder| Terminal → `obabel` |
-| **Desktop Environment** | XFCE 4.16 | Lightweight X11 desktop environment | Web Browser (KasmVNC) |
+| **AutoDockTools (ADT)** | `1.5.7` (MGLTools) | Docking preparation & analysis GUI | Applications Menu → `AutoDockTools (ADT)` or `adt` |
+| **VMD** | `2.0.0` (LINUXAMD64) | Molecular visualization & trajectory analysis | Applications Menu → `VMD` or `vmd` |
+| **micromamba** | `2.10.0` | Isolated Conda/Bioconda env manager | Terminal → `micromamba` |
+| **Linux Desktop (KasmVNC)** | `http://127.0.0.1:3000` | Lightweight XFCE desktop in browser | Open in browser (no login required) |
+| **File Upload/Download Channel** | `http://127.0.0.1:3001` | Upload `.pdb`/data files or download results | Open in browser |
+
+> **Why `platform: linux/amd64` + `ubuntu:22.04`?**
+> Legacy prebuilt Linux bioinformatics binaries (MGLTools 1.5.7 and VMD 2.0.0) target `x86_64` `glibc`. Ubuntu 22.04 (`~32 MB` compressed) is smaller than Arch Linux (`~400+ MB`), provides standard `glibc` compatibility (unlike Alpine `musl`), and runs fast under Rosetta on Apple Silicon.
 
 ---
 
 ## 📋 Prerequisites
 
 * **Docker Desktop** installed on macOS, Linux, or Windows.
-  * *For Apple Silicon (M1/M2/M3/M4)*: In **Docker Desktop > Settings > General**, ensure **"Use Rosetta for x86/amd64 emulation on Apple Silicon"** is checked.
+  * *Apple Silicon (M1/M2/M3/M4)*: In **Docker Desktop → Settings → General**, enable **"Use Rosetta for x86_64/amd64 emulation on Apple Silicon"**.
 * **Docker Compose V2** (`docker compose`).
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start
 
-### Step 1: Clone the Repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/sid0sid-ops/sid_Docker.git
 cd sid_Docker
 ```
 
-### Step 2: Download the Required Tool Archives
-Due to licensing and GitHub's 100 MB file limit, place the official source tarballs directly into the root of this directory:
+### 2. Fetch Dependencies & Add Licensed Tool Archives
+Run the helper script to download KasmVNC (`2.5 MB`) and static `micromamba` into `installers/`:
+```bash
+./get-deps.sh
+```
 
-1. **MGLTools 1.5.7 (Linux 64-bit)**:
-   * Download `mgltools_x86_64Linux2_1.5.7p1.tar.gz` from the [Scripps MGLTools Downloads Page](https://ccsb.scripps.edu/mgltools/downloads/).
-   * Place `mgltools_x86_64Linux2_1.5.7p1.tar.gz` in the `sid_Docker/` folder.
+Then download the two official Linux x86_64 archives and place them inside `installers/`:
+1. **MGLTools 1.5.7 (Linux 64-bit)**: Download `mgltools_x86_64Linux2_1.5.7p1.tar.gz` from the [Scripps MGLTools Downloads Page](https://ccsb.scripps.edu/mgltools/downloads/).
+2. **VMD 2.0.0 (Linux 64-bit OpenGL)**: Download from the [UIUC VMD Download Page](https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD) and rename it to `installers/vmd.tar.gz`.
 
-2. **VMD 2.0.0 (Linux OpenGL 64-bit)**:
-   * Register for free and download the Linux 64-bit OpenGL release (`vmd-2.0.0.bin.LINUXAMD64.tar.gz` or similar) from the [UIUC VMD Download Page](https://www.ks.uiuc.edu/Development/Download/download.cgi?PackageName=VMD).
-   * Rename the downloaded tarball to `vmd.tar.gz` and place it in the `sid_Docker/` folder.
+### 3. (Optional) Mount an Existing Coursework / Projects Folder
+Create a local `.env` file (gitignored) if you want an existing host directory mounted at `/workspace/projects`:
+```bash
+echo "PROJECTS_DIR=/path/to/your/projects" > .env
+```
 
-### Step 3: Build and Start the Workstation
+### 4. Build & Start Manually
 ```bash
 docker compose up -d --build
 ```
 
-### Step 4: Access the Desktop
-Open your browser and navigate to:
-```text
-http://127.0.0.1:3000
-```
-Your desktop environment will open immediately. No login credentials required.
+Open:
+* **Linux Desktop**: `http://127.0.0.1:3000`
+* **File Upload/Download Portal**: `http://127.0.0.1:3001`
 
 ---
 
-## 📂 File Sharing & Workspace
+## 📂 File Sharing & Workspace Layout
 
-* **Workspace Mount**:
-  By default, `docker-compose.yml` mounts `..:/workspace` (or `./workspace:/workspace`) so all your docking files (PDB, PDBQT, GPF, DPF, SDF, and config files) on your host Mac/PC are directly accessible inside `/workspace`.
-* **Desktop Persistence**:
-  User settings (XFCE panels, bash history, terminal settings) are persistently stored in the local `./config` folder and survive container recreations.
+| Host Path | Container Path | Purpose |
+| :--- | :--- | :--- |
+| `./files` | `/workspace/files` | Dropzone & browser upload/download target |
+| `${PROJECTS_DIR:-./projects}` | `/workspace/projects` | Your host projects/coursework directory |
+| `./workspace` | `/workspace/scratch` | Scratch space for temporary experiments |
+| `./config` | `/config` | Persistent Linux `$HOME` & XFCE settings |
+| `./envs` | `/opt/mamba/envs` | Persistent `micromamba` environments |
 
 ---
 
-## 🛠️ Typical Docking Workflow
+## 🧪 Installing, Testing & Deleting Other Linux Tools
 
-You can run your entire docking pipeline inside the container terminal:
+### Method 1: Isolated `micromamba` Environments (Recommended)
+Install any Bioconda / Conda-forge tool (e.g., PyMOL, GROMACS, MDAnalysis, AmberTools) without touching Ubuntu system packages or MGLTools:
 
 ```bash
-# 1. Convert ligand to 3D PDBQT with OpenBabel
-obabel ligand.sdf -O ligand.pdbqt --gen3d -p 7.4
+# Install into an isolated environment
+micromamba create -n test_pymol -c conda-forge pymol-open-source
+micromamba activate test_pymol
+pymol
 
-# 2. Run docking using AutoDock Vina
-vina --config config.txt --log vina_output.log
+# Delete completely with zero trace
+micromamba deactivate
+micromamba env remove -n test_pymol
+micromamba clean --all -y
+```
 
-# 3. Analyze docked poses visually
-adt &
-# or
-vmd docked_complex.pdb
+### Method 2: `sudo apt` / Manual Linux Testing + Instant OS Reset
+Test `.deb` packages or Ubuntu tools freely using passwordless `sudo`:
+
+```bash
+sudo apt update && sudo apt install -y <package>
+```
+
+To wipe all ad-hoc `apt` or `/usr/local` test installs and restore a clean **Ubuntu + VMD + ADT** system while preserving `/workspace` and `/config`:
+
+```bash
+docker compose down && docker compose up -d
 ```
 
 ---
 
-## 🔋 Recommended Daily Usage (Battery Saving)
+## 🔋 Daily Start / Stop (Manual Only)
 
-* **Start Session**:
-  ```bash
-  docker compose up -d
-  ```
-  Open `http://127.0.0.1:3000`.
+```bash
+# Start session
+docker compose up -d
 
-* **Stop Session**:
-  ```bash
-  docker compose stop
-  ```
-  When done, quit Docker Desktop (**Command + Q** on macOS) to free the hypervisor memory and prevent background battery drain.
+# Stop session when done (keeps container state; nothing auto-starts)
+docker compose stop
+```
+
+On macOS, quit Docker Desktop (**Command + Q**) after stopping to free VM RAM and prevent background battery drain.
 
 ---
 
 ## 📄 License
-This Docker recipe is distributed under the MIT License. MGLTools and VMD retain their respective academic and institutional licenses (CCSB Scripps & UIUC).
+
+Distributed under the MIT License. MGLTools/AutoDockTools, VMD, KasmVNC, and Micromamba retain their respective academic and open-source licenses.
